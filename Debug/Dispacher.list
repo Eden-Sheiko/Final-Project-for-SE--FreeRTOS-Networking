@@ -43,11 +43,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  19 .debug_line   0003bbee  00000000  00000000  000ac91d  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_str    00117d34  00000000  00000000  000e850b  2**0
+ 20 .debug_str    00117da6  00000000  00000000  000e850b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .comment      00000050  00000000  00000000  0020023f  2**0
+ 21 .comment      00000050  00000000  00000000  002002b1  2**0
                   CONTENTS, READONLY
- 22 .debug_frame  0000a6fc  00000000  00000000  00200290  2**2
+ 22 .debug_frame  0000a6fc  00000000  00000000  00200304  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -55884,7 +55884,7 @@ void sys_arch_unprotect(sys_prot_t pval)
  8014898:	20040c00 	.word	0x20040c00
 
 0801489c <server_main>:
-TickType_t xBlockTime = BLOCK_TIME; // ticks to wait for the semaphore to become available 50~.
+TickType_t xBlockTime = BLOCK_DURATION; // ticks to wait for the semaphore to become available 50~.
 //---------------------------------------------------------------------------------
 extern struct tftp_context context; //context struct from TFTP.c to init the tftp.
 
@@ -55897,15 +55897,15 @@ void server_main() {
 	/*
 	 * generate departments queues (12) with error checking @see my_assert function
 	 */
-	for (int i = ZERO; i < NUM_OF_DEPS; ++i) {
+	for (int i = ZERO; i < NUM_OF_DEPARTMENTS; ++i) {
  80148a2:	2300      	movs	r3, #0
  80148a4:	60fb      	str	r3, [r7, #12]
  80148a6:	e02c      	b.n	8014902 <server_main+0x66>
-		for (int j = ZERO; j < NUM_OF_FIELDS; ++j) {
+		for (int j = ZERO; j < NUM_OF_EVENT_FIELDS; ++j) {
  80148a8:	2300      	movs	r3, #0
  80148aa:	60bb      	str	r3, [r7, #8]
  80148ac:	e023      	b.n	80148f6 <server_main+0x5a>
-			QueueHandleArray[i][j] = xQueueCreate(Q_SIZE, sizeof(Event));
+			QueueHandleArray[i][j] = xQueueCreate(QUEUE_SIZE, sizeof(Event));
  80148ae:	2200      	movs	r2, #0
  80148b0:	2166      	movs	r1, #102	; 0x66
  80148b2:	200a      	movs	r0, #10
@@ -55936,14 +55936,14 @@ void server_main() {
  80148e8:	4937      	ldr	r1, [pc, #220]	; (80149c8 <server_main+0x12c>)
  80148ea:	4618      	mov	r0, r3
  80148ec:	f000 fae6 	bl	8014ebc <my_assert>
-		for (int j = ZERO; j < NUM_OF_FIELDS; ++j) {
+		for (int j = ZERO; j < NUM_OF_EVENT_FIELDS; ++j) {
  80148f0:	68bb      	ldr	r3, [r7, #8]
  80148f2:	3301      	adds	r3, #1
  80148f4:	60bb      	str	r3, [r7, #8]
  80148f6:	68bb      	ldr	r3, [r7, #8]
  80148f8:	2b02      	cmp	r3, #2
  80148fa:	ddd8      	ble.n	80148ae <server_main+0x12>
-	for (int i = ZERO; i < NUM_OF_DEPS; ++i) {
+	for (int i = ZERO; i < NUM_OF_DEPARTMENTS; ++i) {
  80148fc:	68fb      	ldr	r3, [r7, #12]
  80148fe:	3301      	adds	r3, #1
  8014900:	60fb      	str	r3, [r7, #12]
@@ -55955,7 +55955,7 @@ void server_main() {
 	/*
 	 * creation of task named Dispatch which handles
 	 */
-	if (pdFAIL == xTaskCreate((TaskFunction_t) dispach_task, "Dispatch",STACK_SIZE,NULL, MED_PRIORITY, NULL)){
+	if (pdFAIL == xTaskCreate((TaskFunction_t) dispach_task, "Dispatch",STACK_MEMORY_SIZE,NULL, PRIORITY_MEDIUM, NULL)){
  8014908:	2300      	movs	r3, #0
  801490a:	9301      	str	r3, [sp, #4]
  801490c:	2302      	movs	r3, #2
@@ -55977,7 +55977,7 @@ void server_main() {
 	/*
 	 * creation of task named LWIP
 	 */
-	if (pdFAIL == xTaskCreate((TaskFunction_t) lwip_initialization, "LWIP",STACK_SIZE, NULL, HIGH_PRIORITY, NULL)){
+	if (pdFAIL == xTaskCreate((TaskFunction_t) lwip_initialization, "LWIP",STACK_MEMORY_SIZE, NULL, PRIORITY_HIGH, NULL)){
  801492c:	2300      	movs	r3, #0
  801492e:	9301      	str	r3, [sp, #4]
  8014930:	2303      	movs	r3, #3
@@ -55999,11 +55999,11 @@ void server_main() {
 	/*
 	 * creation of department tasks
 	 */
-	for (int i = ZERO; i < NUM_OF_DEPS; ++i) {
+	for (int i = ZERO; i < NUM_OF_DEPARTMENTS; ++i) {
  8014950:	2300      	movs	r3, #0
  8014952:	607b      	str	r3, [r7, #4]
  8014954:	e01b      	b.n	801498e <server_main+0xf2>
-		if (pdFAIL == xTaskCreate((TaskFunction_t) departmental_task, deps_name[i],STACK_SIZE,(void*) i, MED_PRIORITY, &departments_handles[i])) {
+		if (pdFAIL == xTaskCreate((TaskFunction_t) departmental_task, deps_name[i],STACK_MEMORY_SIZE,(void*) i, PRIORITY_MEDIUM, &departments_handles[i])) {
  8014956:	4a22      	ldr	r2, [pc, #136]	; (80149e0 <server_main+0x144>)
  8014958:	687b      	ldr	r3, [r7, #4]
  801495a:	f852 1023 	ldr.w	r1, [r2, r3, lsl #2]
@@ -56026,7 +56026,7 @@ void server_main() {
  8014980:	4914      	ldr	r1, [pc, #80]	; (80149d4 <server_main+0x138>)
  8014982:	2000      	movs	r0, #0
  8014984:	f000 fa9a 	bl	8014ebc <my_assert>
-	for (int i = ZERO; i < NUM_OF_DEPS; ++i) {
+	for (int i = ZERO; i < NUM_OF_DEPARTMENTS; ++i) {
  8014988:	687b      	ldr	r3, [r7, #4]
  801498a:	3301      	adds	r3, #1
  801498c:	607b      	str	r3, [r7, #4]
@@ -56036,7 +56036,7 @@ void server_main() {
 		}
 	}
 
-	if (pdFAIL == xTaskCreate((TaskFunction_t) heartbeat_task, "heartbeat",STACK_SIZE,NULL, MED_PRIORITY, NULL)){
+	if (pdFAIL == xTaskCreate((TaskFunction_t) heartbeat_task, "heartbeat",STACK_MEMORY_SIZE,NULL, PRIORITY_MEDIUM, NULL)){
  8014994:	2300      	movs	r3, #0
  8014996:	9301      	str	r3, [sp, #4]
  8014998:	2302      	movs	r3, #2
@@ -56090,12 +56090,12 @@ void heartbeat_task(void const *argument){
  80149f8:	af00      	add	r7, sp, #0
  80149fa:	6078      	str	r0, [r7, #4]
 
-	while(TRUE){
+	while(BOOL_TRUE){
 		HAL_GPIO_TogglePin(GPIOB, GPIO_RED_LED);
  80149fc:	f44f 4180 	mov.w	r1, #16384	; 0x4000
  8014a00:	4803      	ldr	r0, [pc, #12]	; (8014a10 <heartbeat_task+0x1c>)
  8014a02:	f7ee f91a 	bl	8002c3a <HAL_GPIO_TogglePin>
-        vTaskDelay(TASK_DELAY_HB / portTICK_PERIOD_MS);
+        vTaskDelay(TASK_HEARTBEAT_DELAY / portTICK_PERIOD_MS);
  8014a06:	2064      	movs	r0, #100	; 0x64
  8014a08:	f7f3 facc 	bl	8007fa4 <vTaskDelay>
 		HAL_GPIO_TogglePin(GPIOB, GPIO_RED_LED);
@@ -56159,7 +56159,7 @@ void dispach_task(void const *argument) {
  8014a52:	2200      	movs	r2, #0
  8014a54:	2100      	movs	r1, #0
  8014a56:	f7f2 f9d9 	bl	8006e0c <xQueueGenericSend>
-	while (TRUE) {
+	while (BOOL_TRUE) {
 
 		/*
 		 * counting xFrequency amount of ticks from xLastWakeTime every 100ms
@@ -56218,11 +56218,11 @@ void departmental_task(void const *argument) {
  8014aa0:	687b      	ldr	r3, [r7, #4]
  8014aa2:	60bb      	str	r3, [r7, #8]
 
-	for (int i = ZERO; i < NUM_OF_FIELDS; i++) {
+	for (int i = ZERO; i < NUM_OF_EVENT_FIELDS; i++) {
  8014aa4:	2300      	movs	r3, #0
  8014aa6:	60fb      	str	r3, [r7, #12]
  8014aa8:	e02d      	b.n	8014b06 <departmental_task+0x6e>
-		sprintf(name, "FID: %d",id * MULT + i);
+		sprintf(name, "FID: %d",id * MULTIPLICATION_FACTOR + i);
  8014aaa:	68ba      	ldr	r2, [r7, #8]
  8014aac:	4613      	mov	r3, r2
  8014aae:	009b      	lsls	r3, r3, #2
@@ -56235,7 +56235,7 @@ void departmental_task(void const *argument) {
  8014abc:	4935      	ldr	r1, [pc, #212]	; (8014b94 <departmental_task+0xfc>)
  8014abe:	4836      	ldr	r0, [pc, #216]	; (8014b98 <departmental_task+0x100>)
  8014ac0:	f000 fdf4 	bl	80156ac <siprintf>
-		if (pdFAIL == xTaskCreate((TaskFunction_t) extractor, name, STACK_SIZE,(void*) (id * MULT + i), LOW_PRIORITY,&field_handles[i])) {
+		if (pdFAIL == xTaskCreate((TaskFunction_t) extractor, name, STACK_MEMORY_SIZE,(void*) (id * MULTIPLICATION_FACTOR + i), PRIORITY_LOW,&field_handles[i])) {
  8014ac4:	68ba      	ldr	r2, [r7, #8]
  8014ac6:	4613      	mov	r3, r2
  8014ac8:	009b      	lsls	r3, r3, #2
@@ -56264,7 +56264,7 @@ void departmental_task(void const *argument) {
  8014af8:	492a      	ldr	r1, [pc, #168]	; (8014ba4 <departmental_task+0x10c>)
  8014afa:	2000      	movs	r0, #0
  8014afc:	f000 f9de 	bl	8014ebc <my_assert>
-	for (int i = ZERO; i < NUM_OF_FIELDS; i++) {
+	for (int i = ZERO; i < NUM_OF_EVENT_FIELDS; i++) {
  8014b00:	68fb      	ldr	r3, [r7, #12]
  8014b02:	3301      	adds	r3, #1
  8014b04:	60fb      	str	r3, [r7, #12]
@@ -56297,7 +56297,7 @@ void departmental_task(void const *argument) {
  8014b32:	491e      	ldr	r1, [pc, #120]	; (8014bac <departmental_task+0x114>)
  8014b34:	4618      	mov	r0, r3
  8014b36:	f000 f9c1 	bl	8014ebc <my_assert>
-	while (TRUE) {
+	while (BOOL_TRUE) {
 
 		/*
 		 * suspend until waked by dispatcher
@@ -56309,7 +56309,7 @@ void departmental_task(void const *argument) {
 		 * send new event into a queue
 		 * with failure check
 		 */
-		if (pdFAIL == xQueueSend(QueueHandleArray[id][event_t.event_severity],(void* )&event_t, (TickType_t )QUEUE_DELAY)) {
+		if (pdFAIL == xQueueSend(QueueHandleArray[id][event_t.event_severity],(void* )&event_t, (TickType_t )QUEUE_DELAY_TIME)) {
  8014b40:	4b1b      	ldr	r3, [pc, #108]	; (8014bb0 <departmental_task+0x118>)
  8014b42:	785b      	ldrb	r3, [r3, #1]
  8014b44:	4618      	mov	r0, r3
@@ -56388,10 +56388,10 @@ void extractor(void const *argument) {
  8014bcc:	687b      	ldr	r3, [r7, #4]
  8014bce:	673b      	str	r3, [r7, #112]	; 0x70
 
-	while (TRUE) {
+	while (BOOL_TRUE) {
 
 		//semaphore to protect UART (empty case)
-		xSemaphoreTake(xDepartmentSemaphore[id / MULT], xBlockTime);
+		xSemaphoreTake(xDepartmentSemaphore[id / MULTIPLICATION_FACTOR], xBlockTime);
  8014bd0:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014bd2:	4a71      	ldr	r2, [pc, #452]	; (8014d98 <extractor+0x1d8>)
  8014bd4:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56406,7 +56406,7 @@ void extractor(void const *argument) {
  8014bea:	4618      	mov	r0, r3
  8014bec:	f7f2 fc30 	bl	8007450 <xQueueSemaphoreTake>
 
-		if (uxQueueMessagesWaiting(QueueHandleArray[id / MULT][CRITICAL])) {
+		if (uxQueueMessagesWaiting(QueueHandleArray[id / MULTIPLICATION_FACTOR][CRITICAL])) {
  8014bf0:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014bf2:	4a69      	ldr	r2, [pc, #420]	; (8014d98 <extractor+0x1d8>)
  8014bf4:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56425,7 +56425,7 @@ void extractor(void const *argument) {
  8014c12:	4603      	mov	r3, r0
  8014c14:	2b00      	cmp	r3, #0
  8014c16:	d015      	beq.n	8014c44 <extractor+0x84>
-			xQueueReciver = xQueueReceive(QueueHandleArray[id / MULT][CRITICAL],(void*) &event_recieved, (TickType_t) QUEUE_DELAY);
+			xQueueReciver = xQueueReceive(QueueHandleArray[id / MULTIPLICATION_FACTOR][CRITICAL],(void*) &event_recieved, (TickType_t) QUEUE_DELAY_TIME);
  8014c18:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014c1a:	4a5f      	ldr	r2, [pc, #380]	; (8014d98 <extractor+0x1d8>)
  8014c1c:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56445,7 +56445,7 @@ void extractor(void const *argument) {
  8014c3c:	f7f2 fb22 	bl	8007284 <xQueueReceive>
  8014c40:	6778      	str	r0, [r7, #116]	; 0x74
  8014c42:	e056      	b.n	8014cf2 <extractor+0x132>
-		} else if (uxQueueMessagesWaiting(QueueHandleArray[id / MULT][WARNING])) {
+		} else if (uxQueueMessagesWaiting(QueueHandleArray[id / MULTIPLICATION_FACTOR][WARNING])) {
  8014c44:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014c46:	4a54      	ldr	r2, [pc, #336]	; (8014d98 <extractor+0x1d8>)
  8014c48:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56465,7 +56465,7 @@ void extractor(void const *argument) {
  8014c68:	4603      	mov	r3, r0
  8014c6a:	2b00      	cmp	r3, #0
  8014c6c:	d016      	beq.n	8014c9c <extractor+0xdc>
-			xQueueReciver = xQueueReceive(QueueHandleArray[id / MULT][WARNING],(void*) &event_recieved, (TickType_t) QUEUE_DELAY);
+			xQueueReciver = xQueueReceive(QueueHandleArray[id / MULTIPLICATION_FACTOR][WARNING],(void*) &event_recieved, (TickType_t) QUEUE_DELAY_TIME);
  8014c6e:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014c70:	4a49      	ldr	r2, [pc, #292]	; (8014d98 <extractor+0x1d8>)
  8014c72:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56486,7 +56486,7 @@ void extractor(void const *argument) {
  8014c94:	f7f2 faf6 	bl	8007284 <xQueueReceive>
  8014c98:	6778      	str	r0, [r7, #116]	; 0x74
  8014c9a:	e02a      	b.n	8014cf2 <extractor+0x132>
-		} else if (uxQueueMessagesWaiting(QueueHandleArray[id / MULT][NOTICE])) {
+		} else if (uxQueueMessagesWaiting(QueueHandleArray[id / MULTIPLICATION_FACTOR][NOTICE])) {
  8014c9c:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014c9e:	4a3e      	ldr	r2, [pc, #248]	; (8014d98 <extractor+0x1d8>)
  8014ca0:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56506,7 +56506,7 @@ void extractor(void const *argument) {
  8014cc0:	4603      	mov	r3, r0
  8014cc2:	2b00      	cmp	r3, #0
  8014cc4:	d015      	beq.n	8014cf2 <extractor+0x132>
-			xQueueReciver = xQueueReceive(QueueHandleArray[id / MULT][NOTICE],(void*) &event_recieved, (TickType_t) QUEUE_DELAY);
+			xQueueReciver = xQueueReceive(QueueHandleArray[id / MULTIPLICATION_FACTOR][NOTICE],(void*) &event_recieved, (TickType_t) QUEUE_DELAY_TIME);
  8014cc6:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014cc8:	4a33      	ldr	r2, [pc, #204]	; (8014d98 <extractor+0x1d8>)
  8014cca:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56546,7 +56546,7 @@ void extractor(void const *argument) {
  8014d0a:	7a7b      	ldrb	r3, [r7, #9]
 			sprintf(buffer,"address: %s, severity: %d, department : %s,field: %d total department events: %d\r\n",
  8014d0c:	461c      	mov	r4, r3
-			deps_name[id / MULT], id % MULT, event_counter[id / MULT]);
+			deps_name[id / MULTIPLICATION_FACTOR], id % MULTIPLICATION_FACTOR, event_counter[id / MULTIPLICATION_FACTOR]);
  8014d0e:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014d10:	4a21      	ldr	r2, [pc, #132]	; (8014d98 <extractor+0x1d8>)
  8014d12:	fb82 1203 	smull	r1, r2, r2, r3
@@ -56567,7 +56567,7 @@ void extractor(void const *argument) {
  8014d34:	4413      	add	r3, r2
  8014d36:	005b      	lsls	r3, r3, #1
  8014d38:	1aca      	subs	r2, r1, r3
-			deps_name[id / MULT], id % MULT, event_counter[id / MULT]);
+			deps_name[id / MULTIPLICATION_FACTOR], id % MULTIPLICATION_FACTOR, event_counter[id / MULTIPLICATION_FACTOR]);
  8014d3a:	6f3b      	ldr	r3, [r7, #112]	; 0x70
  8014d3c:	4916      	ldr	r1, [pc, #88]	; (8014d98 <extractor+0x1d8>)
  8014d3e:	fb81 c103 	smull	ip, r1, r1, r3
@@ -56588,7 +56588,7 @@ void extractor(void const *argument) {
  8014d60:	4815      	ldr	r0, [pc, #84]	; (8014db8 <extractor+0x1f8>)
  8014d62:	f000 fca3 	bl	80156ac <siprintf>
 
-			HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) buffer, strlen(buffer),UART_TIMEOUT);
+			HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) buffer, strlen(buffer),UART_TIMEOUT_PERIOD);
  8014d66:	4814      	ldr	r0, [pc, #80]	; (8014db8 <extractor+0x1f8>)
  8014d68:	f7eb fa52 	bl	8000210 <strlen>
  8014d6c:	4603      	mov	r3, r0
@@ -56599,7 +56599,7 @@ void extractor(void const *argument) {
  8014d76:	f7ef fced 	bl	8004754 <HAL_UART_Transmit>
 
 			//busy wait for 300ms
-			HAL_Delay(BUSY_WAIT_TIME);
+			HAL_Delay(BUSY_WAIT_DURATION);
  8014d7a:	f44f 7096 	mov.w	r0, #300	; 0x12c
  8014d7e:	f7ec f9e3 	bl	8001148 <HAL_Delay>
 
@@ -56615,7 +56615,7 @@ void extractor(void const *argument) {
  8014d8c:	2200      	movs	r2, #0
  8014d8e:	2100      	movs	r1, #0
  8014d90:	f7f2 f83c 	bl	8006e0c <xQueueGenericSend>
-		xSemaphoreTake(xDepartmentSemaphore[id / MULT], xBlockTime);
+		xSemaphoreTake(xDepartmentSemaphore[id / MULTIPLICATION_FACTOR], xBlockTime);
  8014d94:	e71c      	b.n	8014bd0 <extractor+0x10>
  8014d96:	bf00      	nop
  8014d98:	66666667 	.word	0x66666667
@@ -56639,14 +56639,14 @@ uint8_t new_call() {
  8014dc0:	b580      	push	{r7, lr}
  8014dc2:	b082      	sub	sp, #8
  8014dc4:	af00      	add	r7, sp, #0
-	event_t.department = (uint8_t) tftp_buffer[0] - ASCII_MIN;
+	event_t.department = (uint8_t) tftp_buffer[0] - ASCII_ZERO;
  8014dc6:	4b29      	ldr	r3, [pc, #164]	; (8014e6c <new_call+0xac>)
  8014dc8:	781b      	ldrb	r3, [r3, #0]
  8014dca:	3b30      	subs	r3, #48	; 0x30
  8014dcc:	b2da      	uxtb	r2, r3
  8014dce:	4b28      	ldr	r3, [pc, #160]	; (8014e70 <new_call+0xb0>)
  8014dd0:	701a      	strb	r2, [r3, #0]
-	event_t.event_severity = (uint8_t) tftp_buffer[1] - ASCII_MIN;
+	event_t.event_severity = (uint8_t) tftp_buffer[1] - ASCII_ZERO;
  8014dd2:	4b26      	ldr	r3, [pc, #152]	; (8014e6c <new_call+0xac>)
  8014dd4:	785b      	ldrb	r3, [r3, #1]
  8014dd6:	3b30      	subs	r3, #48	; 0x30
@@ -56733,7 +56733,7 @@ uint8_t new_call() {
 	}
 
 	//check if the address string is in its defined range
-	if (strlen(event_t.event_address) > MAX_ADDRS_SIZE) {
+	if (strlen(event_t.event_address) > MAX_ADDRESS_LENGTH) {
  8014e50:	480a      	ldr	r0, [pc, #40]	; (8014e7c <new_call+0xbc>)
  8014e52:	f7eb f9dd 	bl	8000210 <strlen>
  8014e56:	4603      	mov	r3, r0
@@ -56744,7 +56744,7 @@ uint8_t new_call() {
  8014e5e:	e000      	b.n	8014e62 <new_call+0xa2>
 	}
 
-	return TRUE;
+	return BOOL_TRUE;
  8014e60:	2301      	movs	r3, #1
 }
  8014e62:	4618      	mov	r0, r3
@@ -56918,7 +56918,7 @@ int  tftp_read(void* handle, void* buf, int bytes){
 
 08014f6c <_write>:
 int __io_putchar(int ch) {
-	HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, UNO, 0xFFFF);
+	HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, ONE, 0xFFFF);
 	return ch;
 }
 
@@ -56959,40 +56959,40 @@ int _read(int file, char *ptr, int len) {
 	int ch = ZERO;
  8014fa4:	2300      	movs	r3, #0
  8014fa6:	617b      	str	r3, [r7, #20]
-	HAL_UART_Receive(UART_DEBUGER, (uint8_t*) &ch, UNO, HAL_MAX_DELAY);
+	HAL_UART_Receive(UART_DEBUGER, (uint8_t*) &ch, ONE, HAL_MAX_DELAY);
  8014fa8:	f107 0114 	add.w	r1, r7, #20
  8014fac:	f04f 33ff 	mov.w	r3, #4294967295
  8014fb0:	2201      	movs	r2, #1
  8014fb2:	4817      	ldr	r0, [pc, #92]	; (8015010 <_read+0x78>)
  8014fb4:	f7ef fc51 	bl	800485a <HAL_UART_Receive>
-	HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, UNO, HAL_MAX_DELAY);
+	HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, ONE, HAL_MAX_DELAY);
  8014fb8:	f107 0114 	add.w	r1, r7, #20
  8014fbc:	f04f 33ff 	mov.w	r3, #4294967295
  8014fc0:	2201      	movs	r2, #1
  8014fc2:	4813      	ldr	r0, [pc, #76]	; (8015010 <_read+0x78>)
  8014fc4:	f7ef fbc6 	bl	8004754 <HAL_UART_Transmit>
-	if (ch == THREE_TEEN) {
+	if (ch == MAX_TEEN) {
  8014fc8:	697b      	ldr	r3, [r7, #20]
  8014fca:	2b0d      	cmp	r3, #13
  8014fcc:	d10a      	bne.n	8014fe4 <_read+0x4c>
-		ch = TEN;
+		ch = BASE_TEN;
  8014fce:	230a      	movs	r3, #10
  8014fd0:	617b      	str	r3, [r7, #20]
-		HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, UNO, HAL_MAX_DELAY);
+		HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, ONE, HAL_MAX_DELAY);
  8014fd2:	f107 0114 	add.w	r1, r7, #20
  8014fd6:	f04f 33ff 	mov.w	r3, #4294967295
  8014fda:	2201      	movs	r2, #1
  8014fdc:	480c      	ldr	r0, [pc, #48]	; (8015010 <_read+0x78>)
  8014fde:	f7ef fbb9 	bl	8004754 <HAL_UART_Transmit>
  8014fe2:	e00c      	b.n	8014ffe <_read+0x66>
-	} else if (ch == BYTE) {
+	} else if (ch == BITS_IN_BYTE) {
  8014fe4:	697b      	ldr	r3, [r7, #20]
  8014fe6:	2b08      	cmp	r3, #8
  8014fe8:	d109      	bne.n	8014ffe <_read+0x66>
 		ch = 0x30;
  8014fea:	2330      	movs	r3, #48	; 0x30
  8014fec:	617b      	str	r3, [r7, #20]
-		HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, UNO, HAL_MAX_DELAY);
+		HAL_UART_Transmit(UART_DEBUGER, (uint8_t*) &ch, ONE, HAL_MAX_DELAY);
  8014fee:	f107 0114 	add.w	r1, r7, #20
  8014ff2:	f04f 33ff 	mov.w	r3, #4294967295
  8014ff6:	2201      	movs	r2, #1
@@ -57004,7 +57004,7 @@ int _read(int file, char *ptr, int len) {
  8015000:	b2da      	uxtb	r2, r3
  8015002:	68bb      	ldr	r3, [r7, #8]
  8015004:	701a      	strb	r2, [r3, #0]
-	return UNO;
+	return ONE;
  8015006:	2301      	movs	r3, #1
 }
  8015008:	4618      	mov	r0, r3
