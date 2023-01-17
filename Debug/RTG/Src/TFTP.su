@@ -1,0 +1,4 @@
+../RTG/Src/TFTP.c:11:7:tftp_open	24	static
+../RTG/Src/TFTP.c:16:5:tftp_write	16	static
+../RTG/Src/TFTP.c:21:6:tftp_close	16	static
+../RTG/Src/TFTP.c:22:6:tftp_read	24	static
