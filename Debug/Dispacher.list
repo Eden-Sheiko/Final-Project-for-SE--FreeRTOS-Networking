@@ -39,15 +39,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_ranges 00002408  00000000  00000000  00071bb8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_macro  00038957  00000000  00000000  00073fc0  2**0
+ 18 .debug_macro  0003895d  00000000  00000000  00073fc0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_line   0003bbee  00000000  00000000  000ac917  2**0
+ 19 .debug_line   0003bbee  00000000  00000000  000ac91d  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_str    00117d24  00000000  00000000  000e8505  2**0
+ 20 .debug_str    00117d34  00000000  00000000  000e850b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .comment      00000050  00000000  00000000  00200229  2**0
+ 21 .comment      00000050  00000000  00000000  0020023f  2**0
                   CONTENTS, READONLY
- 22 .debug_frame  0000a6fc  00000000  00000000  0020027c  2**2
+ 22 .debug_frame  0000a6fc  00000000  00000000  00200290  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -56082,7 +56082,7 @@ void server_main() {
 /*
  * heartbeat task function
  * indicated by the device that actived by toggle the red led
- *  blinking heartbeat
+ * blinking heartbeat every 100ms
  */
 void heartbeat_task(void const *argument){
  80149f4:	b580      	push	{r7, lr}
@@ -56095,7 +56095,7 @@ void heartbeat_task(void const *argument){
  80149fc:	f44f 4180 	mov.w	r1, #16384	; 0x4000
  8014a00:	4803      	ldr	r0, [pc, #12]	; (8014a10 <heartbeat_task+0x1c>)
  8014a02:	f7ee f91a 	bl	8002c3a <HAL_GPIO_TogglePin>
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(TASK_DELAY_HB / portTICK_PERIOD_MS);
  8014a06:	2064      	movs	r0, #100	; 0x64
  8014a08:	f7f3 facc 	bl	8007fa4 <vTaskDelay>
 		HAL_GPIO_TogglePin(GPIOB, GPIO_RED_LED);
@@ -56639,15 +56639,14 @@ uint8_t new_call() {
  8014dc0:	b580      	push	{r7, lr}
  8014dc2:	b082      	sub	sp, #8
  8014dc4:	af00      	add	r7, sp, #0
-	//convert the first two bytes to its int values 
-	event_t.department = (uint8_t) tftp_buffer[0] - ASCII_DELTA;
+	event_t.department = (uint8_t) tftp_buffer[0] - ASCII_MIN;
  8014dc6:	4b29      	ldr	r3, [pc, #164]	; (8014e6c <new_call+0xac>)
  8014dc8:	781b      	ldrb	r3, [r3, #0]
  8014dca:	3b30      	subs	r3, #48	; 0x30
  8014dcc:	b2da      	uxtb	r2, r3
  8014dce:	4b28      	ldr	r3, [pc, #160]	; (8014e70 <new_call+0xb0>)
  8014dd0:	701a      	strb	r2, [r3, #0]
-	event_t.event_severity = (uint8_t) tftp_buffer[1] - ASCII_DELTA;
+	event_t.event_severity = (uint8_t) tftp_buffer[1] - ASCII_MIN;
  8014dd2:	4b26      	ldr	r3, [pc, #152]	; (8014e6c <new_call+0xac>)
  8014dd4:	785b      	ldrb	r3, [r3, #1]
  8014dd6:	3b30      	subs	r3, #48	; 0x30
@@ -56655,7 +56654,7 @@ uint8_t new_call() {
  8014dda:	4b25      	ldr	r3, [pc, #148]	; (8014e70 <new_call+0xb0>)
  8014ddc:	705a      	strb	r2, [r3, #1]
 
-	//save the address string (up to 80 bytes) along with the padding (minimum of 18 bytes)
+	//save the address string
 	sprintf(event_t.event_address, "%s", &tftp_buffer[2]);
  8014dde:	4a25      	ldr	r2, [pc, #148]	; (8014e74 <new_call+0xb4>)
  8014de0:	4925      	ldr	r1, [pc, #148]	; (8014e78 <new_call+0xb8>)
